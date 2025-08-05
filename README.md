@@ -17,6 +17,8 @@ This project is a Streamlit web application that allows users to upload a C code
 - Python 3.8 or higher
 - Mistral Codestral API key (set as environment variable `MISTRAL_API_KEY`)
 
+<img width="2048" height="2048" alt="Gemini_Generated_Image_ittpzqittpzqittp" src="https://github.com/user-attachments/assets/3c421b27-f124-496d-b018-6a8cf13e1fbb" />
+
 ## Installation
 
 1. Clone the repository or copy the project files.
