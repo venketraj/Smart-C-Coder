@@ -32,14 +32,19 @@ st.markdown(
         font-weight: 800;
         color: #ff4b1f;
     }
-    .response-area {
+    .response-box {
         background: #dff6f0;
         border-radius: 15px;
-        padding: 15px;
-        font-family: monospace;
+        padding: 15px 20px;
+        font-family: 'Courier New', monospace;
         font-size: 1rem;
         white-space: pre-wrap;
         box-shadow: 2px 4px 10px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+    .recommendations li {
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
     }
     </style>
     """,
@@ -52,6 +57,21 @@ st.markdown('<div class="subtitle">Upload your C code and Guidelines to transfor
 # File uploaders
 code_file = st.file_uploader("Upload your C code file (.c)", type=["c"])
 guideline_file = st.file_uploader("Upload guideline text file (.txt)", type=["txt"])
+
+def parse_response(response_text):
+    # Try separating code and explanation by looking for keywords
+    split_phrases = ["Explanation:", "Explanation of Changes", "Provide the improved code and a clear explanation of the changes."]
+    code_part = response_text
+    explanation_part = ""
+
+    for phrase in split_phrases:
+        if phrase in response_text:
+            parts = response_text.split(phrase)
+            code_part = parts[0].strip()
+            explanation_part = parts[1].strip()
+            break
+
+    return code_part, explanation_part
 
 def call_codestral_api(c_code, guidelines):
     api_key = "LTIT3rxCF0vyjonVc1GQ4KPTozbsOT2D"
@@ -97,7 +117,6 @@ def call_codestral_api(c_code, guidelines):
     except Exception as e:
         return f"Error: {str(e)}\nResponse: {response.text}"
 
-
 if code_file and guideline_file:
     c_code = code_file.read().decode("utf-8")
     guidelines = guideline_file.read().decode("utf-8")
@@ -105,9 +124,27 @@ if code_file and guideline_file:
     if st.button("Rewrite Code with Guidelines"):
         with st.spinner("Sending request to Codestral API..."):
             result = call_codestral_api(c_code, guidelines)
-            if result:
-                st.markdown('<div class="response-area">', unsafe_allow_html=True)
-                st.text(result)
-                st.markdown('</div>', unsafe_allow_html=True)
+            if result and not result.startswith("Error:"):
+                code_part, explanation_part = parse_response(result)
+                
+                st.subheader("🎉 Improved C Code")
+                st.code(code_part, language="c")
+
+                st.subheader("💡 Explanation of Changes")
+                st.markdown(explanation_part)
+
+                st.subheader("🌟 Recommendations to Improve Your Project")
+                st.markdown("""
+                - 🖌️ **Use `st.code` for color syntax highlighting in Streamlit.**
+                - 📝 **Format explanations with bullet points and bold text for clarity.**
+                - 🔍 **Add original vs improved code diffs interactively.**
+                - ⚠️ **Provide user-friendly error handling in UI.**
+                - 💾 **Add download button for improved code file.**
+                - 📚 **Offer pre-built guideline templates for common coding practices.**
+                - 🕒 **Implement revision history with timestamps.**
+                - ⭐ **Enable user feedback/rating on code improvements.**
+                """)
+            else:
+                st.error(result)
 else:
     st.info("Please upload both your C code and the guideline files to proceed.")
